@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <!-- iPhone "Add to Home Screen" full-screen app feel -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Recipe Box" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#c4622d" />
+  <title>My Recipe Box</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ===== Header ===== -->
+  <header class="app-header">
+    <div class="header-inner">
+      <h1 class="brand">🍲 My Recipe Box</h1>
+      <div class="header-actions">
+        <button id="addBtn" class="btn btn-primary">+ Add recipe</button>
+        <button id="pantryBtn" class="btn btn-ghost" title="Edit your pantry staples">Pantry</button>
+        <button id="exportBtn" class="btn btn-ghost" title="Download all recipes as a backup file">Export</button>
+        <button id="importBtn" class="btn btn-ghost" title="Load recipes from a backup file">Import</button>
+        <input type="file" id="importInput" accept="application/json,.json" hidden />
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Tabs ===== -->
+  <nav class="tabs">
+    <div class="tabs-inner">
+      <button class="tab active" data-tab="recipes">Recipes</button>
+      <button class="tab" data-tab="shopping">🛒 Shopping list</button>
+    </div>
+  </nav>
+
+  <!-- ===== RECIPES VIEW ===== -->
+  <div id="recipesView">
+    <section class="controls">
+      <div class="controls-inner">
+        <input type="search" id="searchInput" class="search" placeholder="Search title or ingredient…" />
+        <select id="sortSelect" class="select" aria-label="Sort recipes">
+          <option value="recent">Newest first</option>
+          <option value="title">Title A–Z</option>
+          <option value="rating">Highest rated</option>
+        </select>
+      </div>
+    </section>
+
+    <main class="grid-wrap">
+      <div id="cardGrid" class="card-grid"></div>
+      <div id="emptyState" class="empty-state" hidden>
+        <p class="empty-emoji">🥣</p>
+        <p>No recipes yet. Click <strong>+ Add recipe</strong> to create your first one.</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- ===== SHOPPING VIEW ===== -->
+  <div id="shoppingView" hidden>
+    <main class="grid-wrap">
+      <div class="shop-layout">
+        <section class="shop-pick">
+          <h2 class="shop-h">1 · Pick what you're cooking</h2>
+          <div id="shopRecipeList" class="shop-recipe-list"></div>
+        </section>
+        <section class="shop-result">
+          <h2 class="shop-h">2 · Your shopping list</h2>
+          <div class="shop-export-bar no-print">
+            <button id="copyNotesBtn" class="btn btn-primary">📋 Copy for Apple Notes</button>
+            <button id="downloadTxtBtn" class="btn btn-ghost">Download .txt</button>
+            <span id="copyToast" class="copy-toast" hidden>Copied! Paste into Notes, then tap the checklist icon.</span>
+          </div>
+          <div id="shopOutput"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <footer class="app-footer">
+    <span id="countLabel"></span>
+    <span class="footer-note">Saved in this browser · Export regularly to back up</span>
+  </footer>
+
+  <!-- ===== Detail view modal ===== -->
+  <div id="detailModal" class="modal" hidden>
+    <div class="modal-card detail-card" role="dialog" aria-modal="true">
+      <button class="modal-close" data-close aria-label="Close">&times;</button>
+      <div id="detailContent"></div>
+      <div class="detail-actions no-print">
+        <button id="detailCook" class="btn btn-primary">▶ Start cooking</button>
+        <button id="detailCopy" class="btn btn-ghost">📋 Copy for Notes</button>
+        <button id="detailEdit" class="btn btn-ghost">Edit</button>
+        <button id="detailDelete" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Cook mode modal (full screen) ===== -->
+  <div id="cookModal" class="cook" hidden>
+    <div class="cook-bar">
+      <span id="cookProgress" class="cook-progress"></span>
+      <button class="cook-exit" data-close aria-label="Exit cooking">✕ Exit</button>
+    </div>
+    <div id="cookBody" class="cook-body"></div>
+    <div class="cook-nav">
+      <button id="cookBack" class="btn btn-ghost cook-btn">← Back</button>
+      <button id="cookNext" class="btn btn-primary cook-btn">Next →</button>
+    </div>
+  </div>
+
+  <!-- ===== Add / edit form modal ===== -->
+  <div id="formModal" class="modal" hidden>
+    <div class="modal-card form-card" role="dialog" aria-modal="true">
+      <button class="modal-close" data-close aria-label="Close">&times;</button>
+      <h2 id="formTitle">Add recipe</h2>
+      <form id="recipeForm">
+        <input type="hidden" id="recipeId" />
+
+        <label class="field">
+          <span class="field-label">Title <em>*</em></span>
+          <input type="text" id="fTitle" required placeholder="e.g. Grandma's banana bread" />
+        </label>
+
+        <label class="field">
+          <span class="field-label">Required utensils</span>
+          <span class="field-hint">What to get out before you start — one per line</span>
+          <textarea id="fUtensils" rows="4" placeholder="Large mixing bowl&#10;Loaf tin&#10;Whisk&#10;Measuring cups"></textarea>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Ingredients <em>*</em></span>
+          <span class="field-hint">One per line. Pantry staples are detected automatically.</span>
+          <textarea id="fIngredients" rows="6" required placeholder="2 ripe bananas&#10;1 cup flour&#10;1/2 cup sugar"></textarea>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Instructions <em>*</em></span>
+          <span class="field-hint">One step per line — they'll be numbered and shown one at a time in Cook mode</span>
+          <textarea id="fSteps" rows="6" required placeholder="Preheat oven to 350°F&#10;Mash the bananas&#10;Mix everything and bake 50 min"></textarea>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Rating</span>
+          <div id="ratingStars" class="rating-input" role="radiogroup" aria-label="Rating"></div>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Personal notes</span>
+          <span class="field-hint">Tweaks you've made, substitutions, reminders</span>
+          <textarea id="fNotes" rows="3" placeholder="Used half the sugar, added walnuts — perfect."></textarea>
+        </label>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+          <button type="submit" class="btn btn-primary">Save recipe</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== Pantry staples modal ===== -->
+  <div id="pantryModal" class="modal" hidden>
+    <div class="modal-card form-card" role="dialog" aria-modal="true">
+      <button class="modal-close" data-close aria-label="Close">&times;</button>
+      <h2>My pantry staples</h2>
+      <p class="field-hint" style="margin-bottom:12px">
+        Things you usually have at home. Any recipe ingredient that matches one of these is treated as
+        <strong>already have</strong>; everything else goes on your shopping list. One per line.
+      </p>
+      <textarea id="pantryText" rows="12" class="pantry-text"></textarea>
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+        <button id="pantrySave" class="btn btn-primary">Save pantry</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

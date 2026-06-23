@@ -1,0 +1,311 @@
+/* ===== Warm & cozy kitchen theme ===== */
+:root {
+  --cream: #fdf6ec;
+  --cream-deep: #f6ead6;
+  --paper: #fffdf9;
+  --terracotta: #c4622d;
+  --terracotta-dark: #a44e21;
+  --olive: #6f7a4f;
+  --olive-deep: #59633e;
+  --ink: #3a322b;
+  --ink-soft: #7a6f63;
+  --line: #e7d8c2;
+  --gold: #e0a526;
+  --danger: #b23b3b;
+  --shadow: 0 6px 20px rgba(120, 80, 40, 0.12);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+* { box-sizing: border-box; }
+
+/* Make the hidden attribute always win, even over display:flex below */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+/* ===== Header ===== */
+.app-header {
+  background: var(--terracotta);
+  color: #fff;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.brand { font-size: 1.5rem; margin: 0; letter-spacing: .3px; }
+.header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ===== Buttons ===== */
+.btn {
+  font: inherit;
+  font-weight: 600;
+  border: none;
+  border-radius: 999px;
+  padding: 9px 16px;
+  cursor: pointer;
+  transition: transform .08s ease, background .15s ease, box-shadow .15s ease;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--gold); color: #4a3208; }
+.btn-primary:hover { background: #efb53e; }
+.btn-ghost { background: rgba(255,255,255,.18); color: #fff; }
+.btn-ghost:hover { background: rgba(255,255,255,.3); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: #993232; }
+
+/* Ghost buttons on light backgrounds */
+.form-actions .btn-ghost,
+.detail-actions .btn-ghost,
+.shop-export-bar .btn-ghost { background: var(--cream-deep); color: var(--ink); }
+.form-actions .btn-ghost:hover,
+.detail-actions .btn-ghost:hover,
+.shop-export-bar .btn-ghost:hover { background: var(--line); }
+
+/* ===== Tabs ===== */
+.tabs { background: var(--cream-deep); border-bottom: 1.5px solid var(--line); }
+.tabs-inner { max-width: 1100px; margin: 0 auto; padding: 0 20px; display: flex; gap: 6px; }
+.tab {
+  font: inherit; font-weight: 600;
+  background: none; border: none;
+  padding: 14px 18px;
+  color: var(--ink-soft); cursor: pointer;
+  border-bottom: 3px solid transparent;
+}
+.tab.active { color: var(--terracotta-dark); border-bottom-color: var(--terracotta); }
+
+/* ===== Controls ===== */
+.controls { max-width: 1100px; margin: 22px auto 0; padding: 0 20px; }
+.controls-inner { display: flex; gap: 10px; flex-wrap: wrap; }
+.search, .select {
+  font: inherit;
+  padding: 11px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  color: var(--ink);
+}
+.search { flex: 1 1 280px; }
+.search:focus, .select:focus { outline: none; border-color: var(--terracotta); }
+
+/* ===== Grid & cards ===== */
+.grid-wrap { max-width: 1100px; margin: 0 auto; padding: 22px 20px 40px; }
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 18px;
+}
+.card {
+  background: var(--paper);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform .12s ease, box-shadow .12s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(120,80,40,.18); }
+.card-title { margin: 0; font-size: 1.15rem; color: var(--terracotta-dark); }
+.card-meta { font-size: .85rem; color: var(--ink-soft); }
+.stars { color: var(--gold); letter-spacing: 1px; }
+.stars .empty { color: var(--line); }
+
+/* ===== Empty state ===== */
+.empty-state { text-align: center; color: var(--ink-soft); padding: 60px 20px; }
+.empty-emoji { font-size: 3rem; margin: 0 0 8px; }
+
+/* ===== Footer ===== */
+.app-footer {
+  max-width: 1100px; margin: 0 auto; padding: 0 20px 30px;
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+  color: var(--ink-soft); font-size: .85rem;
+}
+
+/* ===== Modals ===== */
+.modal {
+  position: fixed; inset: 0;
+  background: rgba(58, 50, 43, .5);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 30px 16px; overflow-y: auto; z-index: 50;
+}
+.modal-card {
+  background: var(--paper);
+  border-radius: var(--radius);
+  padding: 26px;
+  width: 100%; max-width: 620px;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(58,50,43,.35);
+}
+.modal-close {
+  position: absolute; top: 10px; right: 12px;
+  width: 38px; height: 38px;
+  border: none; border-radius: 50%;
+  background: var(--cream-deep);
+  font-size: 1.6rem; line-height: 1;
+  color: var(--ink); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-close:hover { background: var(--line); }
+
+/* ===== Form ===== */
+.field { display: flex; flex-direction: column; margin-bottom: 16px; }
+.field-label { font-weight: 600; margin-bottom: 4px; }
+.field-label em { color: var(--terracotta); font-style: normal; }
+.field-hint { font-size: .78rem; color: var(--ink-soft); margin-bottom: 6px; }
+.field input, .field textarea {
+  font: inherit; padding: 10px 12px;
+  border: 1.5px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--cream); color: var(--ink); resize: vertical;
+}
+.field input:focus, .field textarea:focus { outline: none; border-color: var(--terracotta); background: #fff; }
+.form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+.pantry-text {
+  font: inherit; width: 100%; padding: 10px 12px;
+  border: 1.5px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--cream); color: var(--ink); resize: vertical;
+}
+
+/* ===== Rating input ===== */
+.rating-input { display: flex; gap: 4px; font-size: 1.6rem; }
+.rating-input span { cursor: pointer; color: var(--line); transition: color .1s; }
+.rating-input span.on { color: var(--gold); }
+
+/* ===== Detail view ===== */
+.detail-card h2 { color: var(--terracotta-dark); margin: 0 8px 4px 0; }
+.detail-meta { color: var(--ink-soft); font-size: .9rem; margin-bottom: 16px; }
+.detail-section { margin-bottom: 20px; }
+.detail-section h3 {
+  margin: 0 0 8px; font-size: 1.05rem; color: var(--olive);
+  border-bottom: 2px solid var(--cream-deep); padding-bottom: 4px;
+}
+.detail-section ul, .detail-section ol { margin: 0; padding-left: 22px; }
+.detail-section li { margin-bottom: 6px; }
+.detail-notes { background: var(--cream-deep); border-radius: var(--radius-sm); padding: 12px 14px; }
+.detail-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+
+/* Ingredient have/need groups */
+.ing-group { margin-bottom: 14px; }
+.ing-group .group-head { font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.ing-need .group-head { color: var(--terracotta-dark); }
+.ing-have .group-head { color: var(--olive-deep); }
+.ing-group ul { list-style: none; padding-left: 0; margin: 0; }
+.ing-group li { padding: 4px 0 4px 22px; position: relative; }
+.ing-need li::before { content: "🛒"; position: absolute; left: 0; }
+.ing-have li::before { content: "✓"; position: absolute; left: 0; color: var(--olive); font-weight: 700; }
+
+/* ===== Cook mode ===== */
+.cook {
+  position: fixed; inset: 0; z-index: 80;
+  background: var(--cream);
+  display: flex; flex-direction: column;
+}
+.cook-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; background: var(--terracotta); color: #fff;
+}
+.cook-progress { font-weight: 700; font-size: 1.05rem; }
+.cook-exit {
+  font: inherit; font-weight: 600;
+  background: rgba(255,255,255,.2); color: #fff;
+  border: none; border-radius: 999px; padding: 8px 16px; cursor: pointer;
+}
+.cook-exit:hover { background: rgba(255,255,255,.32); }
+.cook-body {
+  flex: 1; overflow-y: auto;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 30px 24px;
+}
+.cook-stage-label { color: var(--terracotta); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; font-size: .9rem; margin-bottom: 18px; }
+.cook-step-text { font-size: clamp(1.6rem, 4.5vw, 2.6rem); font-weight: 600; max-width: 18ch; line-height: 1.35; }
+.cook-utensils { list-style: none; padding: 0; margin: 0; max-width: 460px; width: 100%; text-align: left; }
+.cook-utensils li {
+  font-size: 1.25rem; padding: 14px 18px; margin-bottom: 10px;
+  background: var(--paper); border: 2px solid var(--line); border-radius: var(--radius-sm);
+  cursor: pointer; display: flex; align-items: center; gap: 12px;
+}
+.cook-utensils li::before { content: "○"; font-size: 1.4rem; color: var(--ink-soft); }
+.cook-utensils li.done { background: var(--cream-deep); color: var(--ink-soft); text-decoration: line-through; }
+.cook-utensils li.done::before { content: "✓"; color: var(--olive); }
+.cook-title { font-size: 1.4rem; color: var(--terracotta-dark); margin: 0 0 6px; }
+.cook-nav {
+  display: flex; gap: 14px; padding: 18px 24px;
+  border-top: 1.5px solid var(--line); background: var(--cream-deep);
+}
+.cook-btn { flex: 1; padding: 16px; font-size: 1.15rem; }
+.cook-btn:disabled { opacity: .4; cursor: default; }
+
+/* ===== Shopping view ===== */
+.shop-layout { display: grid; grid-template-columns: 1fr 1.3fr; gap: 24px; }
+.shop-h { font-size: 1.1rem; color: var(--olive-deep); margin: 0 0 12px; }
+.shop-recipe-list { display: flex; flex-direction: column; gap: 8px; }
+.shop-pick-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--paper); border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm); padding: 12px 14px; cursor: pointer;
+}
+.shop-pick-item input { width: 18px; height: 18px; accent-color: var(--terracotta); }
+.shop-pick-item.checked { border-color: var(--terracotta); background: #fff; }
+.shop-export-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+.copy-toast { color: var(--olive-deep); font-size: .85rem; font-weight: 600; }
+.shop-empty { color: var(--ink-soft); padding: 20px 0; }
+.shop-note { color: var(--ink-soft); font-size: .82rem; margin: 0 0 10px; font-style: italic; }
+.shop-section { margin-bottom: 22px; }
+.shop-section h3 {
+  font-size: 1rem; margin: 0 0 8px; padding-bottom: 4px;
+  border-bottom: 2px solid var(--cream-deep);
+}
+.shop-section.need h3 { color: var(--terracotta-dark); }
+.shop-section.have h3 { color: var(--olive-deep); }
+.shop-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: var(--radius-sm); margin-bottom: 6px;
+  background: var(--paper); border: 1.5px solid var(--line);
+}
+.shop-item input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--olive); }
+.shop-item .name { flex: 1; }
+.shop-item.bought .name { text-decoration: line-through; color: var(--ink-soft); }
+.shop-item .flip {
+  font-size: .75rem; border: none; background: var(--cream-deep);
+  color: var(--ink-soft); border-radius: 999px; padding: 4px 10px; cursor: pointer;
+}
+.shop-item .flip:hover { background: var(--line); }
+.shop-from { font-size: .75rem; color: var(--ink-soft); }
+
+/* ===== Responsive ===== */
+@media (max-width: 760px) {
+  .shop-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 540px) {
+  .brand { font-size: 1.25rem; width: 100%; }
+  .header-actions .btn { padding: 8px 12px; font-size: .9rem; }
+  .modal { padding: 12px; }
+  .modal-card { padding: 20px; }
+}
+
+/* ===== Print ===== */
+@media print {
+  body { background: #fff; }
+  .app-header, .tabs, .controls, .card-grid, .app-footer, .no-print,
+  .modal-close, .shop-pick, .cook-nav, .cook-bar { display: none !important; }
+  .modal, .cook { position: static; background: none; padding: 0; overflow: visible; }
+  .modal-card { box-shadow: none; max-width: 100%; padding: 0; }
+}
