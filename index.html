@@ -10,6 +10,10 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#c4622d" />
   <title>My Recipe Box</title>
+  <!-- PWA: installable app icon, offline support -->
+  <link rel="manifest" href="manifest.json?v=5" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
   <link rel="stylesheet" href="styles.css?v=4" />
 </head>
 <body>
@@ -307,5 +311,15 @@
   </div>
 
   <script src="app.js?v=4"></script>
+  <!-- Register the service worker so the app installs & works offline -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function (err) {
+          console.warn('Service worker registration failed:', err);
+        });
+      });
+    }
+  </script>
 </body>
 </html>
