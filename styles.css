@@ -260,6 +260,26 @@ body {
 .cook-btn { flex: 1; padding: 16px; font-size: 1.15rem; }
 .cook-btn:disabled { opacity: .4; cursor: default; }
 
+/* "Keep an eye on" — pinned across every Cook-mode step */
+.cook-watch {
+  flex: 0 0 auto;
+  background: #fbf2d6; border-bottom: 2px solid var(--gold);
+  padding: 12px 20px; max-height: 28vh; overflow-y: auto;
+  text-align: left; color: var(--ink);
+}
+.cook-watch-label {
+  display: block; font-weight: 800; color: #9a7411;
+  text-transform: uppercase; letter-spacing: 1px; font-size: .78rem; margin-bottom: 4px;
+}
+.cook-watch-text { font-size: 1.05rem; font-weight: 600; line-height: 1.4; }
+
+/* "Keep an eye on" inside the recipe detail view */
+.detail-watch {
+  background: #fbf2d6; border-left: 4px solid var(--gold);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  font-weight: 600; line-height: 1.45;
+}
+
 /* ===== Shopping view ===== */
 .shop-layout { display: grid; grid-template-columns: 1fr 1.3fr; gap: 24px; }
 .shop-h { font-size: 1.1rem; color: var(--olive-deep); margin: 0 0 12px; }

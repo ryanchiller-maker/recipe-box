@@ -10,7 +10,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#c4622d" />
   <title>My Recipe Box</title>
-  <link rel="stylesheet" href="styles.css?v=3" />
+  <link rel="stylesheet" href="styles.css?v=4" />
 </head>
 <body>
   <!-- ===== Header ===== -->
@@ -20,8 +20,8 @@
       <div class="header-actions">
         <button id="addBtn" class="btn btn-primary">+ Add recipe</button>
         <button id="pantryBtn" class="btn btn-ghost" title="Edit your pantry staples">Pantry</button>
-        <button id="exportBtn" class="btn btn-ghost" title="Download all recipes as a backup file">Export</button>
-        <button id="importBtn" class="btn btn-ghost" title="Load recipes from a backup file">Import</button>
+        <button id="exportBtn" class="btn btn-ghost" title="Download a full backup — recipes, supplies, ingredients & pantry">Export</button>
+        <button id="importBtn" class="btn btn-ghost" title="Restore from a backup file">Import</button>
         <input type="file" id="importInput" accept="application/json,.json" hidden />
       </div>
     </div>
@@ -157,6 +157,7 @@
       <span id="cookProgress" class="cook-progress"></span>
       <button class="cook-exit" data-close aria-label="Exit cooking">✕ Exit</button>
     </div>
+    <div id="cookWatch" class="cook-watch" hidden></div>
     <div id="cookBody" class="cook-body"></div>
     <div class="cook-nav">
       <button id="cookBack" class="btn btn-ghost cook-btn">← Back</button>
@@ -207,6 +208,12 @@
           <span class="field-label">Instructions <em>*</em></span>
           <span class="field-hint">One step per line — they'll be numbered and shown one at a time in Cook mode</span>
           <textarea id="fSteps" rows="6" required placeholder="Preheat oven to 350°F&#10;Mash the bananas&#10;Mix everything and bake 50 min"></textarea>
+        </label>
+
+        <label class="field">
+          <span class="field-label">👀 Keep an eye on</span>
+          <span class="field-hint">Things to track no matter which step you're on — parallel tasks, timers, warnings. Stays pinned on screen the whole time you're in Cook mode.</span>
+          <textarea id="fWatch" rows="3" placeholder="Start the rice now — 20 min, stir occasionally&#10;Don't let the garlic burn&#10;Preheat oven before step 4"></textarea>
         </label>
 
         <label class="field">
@@ -299,6 +306,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>

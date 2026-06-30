@@ -69,6 +69,7 @@ function migrateOrSeed() {
       ingredients: r.ingredients || [],
       steps: r.steps || [],
       notes: r.notes || "",
+      watch: r.watch || "",
       createdAt: r.createdAt || Date.now(),
       updatedAt: r.updatedAt || Date.now(),
     }));
@@ -192,6 +193,10 @@ function openDetail(id) {
     html += '<div class="detail-section"><h3>Required utensils</h3><ul>' +
       r.utensils.map((u) => "<li>" + escapeHtml(u) + "</li>").join("") + "</ul></div>";
   }
+  if (r.watch) {
+    html += '<div class="detail-section watch-section"><h3>👀 Keep an eye on</h3>' +
+      '<div class="detail-watch">' + escapeHtml(r.watch).replace(/\n/g, "<br>") + "</div></div>";
+  }
   html += '<div class="detail-section"><h3>Ingredients</h3>' + ingredientGroupsHtml(r) + "</div>";
   html += '<div class="detail-section"><h3>Instructions</h3><ol>' +
     (r.steps || []).map((s) => "<li>" + escapeHtml(s) + "</li>").join("") + "</ol></div>";
@@ -220,8 +225,21 @@ function startCook(id) {
   closeModals();
   $("cookModal").hidden = false;
   document.body.style.overflow = "hidden";
+  renderCookWatch(r);
   requestWake();
   renderCook();
+}
+function renderCookWatch(r) {
+  const el = $("cookWatch");
+  if (!el) return;
+  if (r.watch && r.watch.trim()) {
+    el.innerHTML = '<span class="cook-watch-label">👀 Keep an eye on</span>' +
+      '<span class="cook-watch-text">' + escapeHtml(r.watch).replace(/\n/g, "<br>") + "</span>";
+    el.hidden = false;
+  } else {
+    el.innerHTML = "";
+    el.hidden = true;
+  }
 }
 function renderCook() {
   const r = recipes.find((x) => x.id === cook.id);
@@ -273,6 +291,7 @@ function openForm(id) {
     $("fUtensils").value = (r.utensils || []).join("\n");
     $("fIngredients").value = (r.ingredients || []).join("\n");
     $("fSteps").value = (r.steps || []).join("\n");
+    $("fWatch").value = r.watch || "";
     $("fNotes").value = r.notes || "";
   } else {
     $("formTitle").textContent = "Add recipe";
@@ -290,6 +309,7 @@ function handleSubmit(e) {
     utensils: linesToArray($("fUtensils").value),
     ingredients: linesToArray($("fIngredients").value),
     steps: linesToArray($("fSteps").value),
+    watch: $("fWatch").value.trim(),
     notes: $("fNotes").value.trim(),
   };
   if (id) {
@@ -569,9 +589,14 @@ function filterIngredients(query) {
     .slice(0, 8);
 }
 function fillUnitDropdown(ing) {
-  const units = ing && ing.units ? ing.units : [];
+  // Always offer every unit so you can pick one even for a brand-new ingredient.
+  // An ingredient's own preferred units (if any) are listed first and pre-selected.
+  const preferred = (ing && ing.units) ? ing.units.filter((u) => UNIT_OPTIONS.includes(u)) : [];
+  const rest = UNIT_OPTIONS.filter((u) => !preferred.includes(u));
+  const opt = (u) => '<option value="' + u + '">' + u + "</option>";
   $("ingUnit").innerHTML = '<option value="">(no unit)</option>' +
-    units.map((u) => '<option value="' + u + '">' + u + "</option>").join("");
+    preferred.map(opt).join("") + rest.map(opt).join("");
+  $("ingUnit").value = preferred.length ? preferred[0] : "";
 }
 function hideIngSuggest() { const b = $("ingSuggest"); b.hidden = true; b.innerHTML = ""; }
 function resetIngPickerRow() {
@@ -833,43 +858,114 @@ function copyRecipe() {
   }
 }
 
-/* ---------- Export / import recipes ---------- */
+/* ---------- Export / import (full backup) ----------
+   Export bundles EVERYTHING — recipes, supplies, ingredients, and pantry
+   staples — into one timestamped file so nothing is left behind. Import still
+   accepts old recipes-only files (a bare JSON array) for backwards compatibility. */
+function cleanRecipe(r) {
+  return {
+    id: r.id || uid(),
+    title: r.title || "Untitled",
+    utensils: r.utensils || [],
+    ingredients: r.ingredients || [],
+    steps: r.steps || [],
+    watch: r.watch || "",
+    notes: r.notes || "",
+    createdAt: r.createdAt || Date.now(),
+    updatedAt: r.updatedAt || Date.now(),
+  };
+}
+/* A filename-safe timestamp like 2026-06-30_14-07-52 — unique to the second,
+   so exporting twice never overwrites a previous backup. */
+function backupStamp() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) +
+    "_" + p(d.getHours()) + "-" + p(d.getMinutes()) + "-" + p(d.getSeconds());
+}
 function exportJson() {
-  const blob = new Blob([JSON.stringify(recipes, null, 2)], { type: "application/json" });
+  const backup = {
+    type: "recipeBoxBackup",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    recipes: recipes,
+    supplies: supplies,
+    ingredients: ingredients,
+    pantry: pantry,
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "recipes-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+  a.download = "recipe-box-backup-" + backupStamp() + ".json";
   a.click();
   URL.revokeObjectURL(url);
+}
+function mergeByName(current, incoming, makeItem) {
+  // Add incoming entries whose (lowercased) name isn't already present. Additive only.
+  const seen = new Set(current.map((x) => (x.name || "").toLowerCase().trim()));
+  (incoming || []).forEach((raw) => {
+    const item = makeItem(raw);
+    const key = (item.name || "").toLowerCase().trim();
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    current.push(item);
+  });
 }
 function importJson(file) {
   const reader = new FileReader();
   reader.onload = () => {
     try {
-      const incoming = JSON.parse(reader.result);
-      if (!Array.isArray(incoming)) throw new Error("Not a recipe list");
-      const merge = confirm("Found " + incoming.length +
-        " recipe(s).\n\nOK = MERGE with your current recipes.\nCancel = REPLACE everything with the file.");
-      const cleaned = incoming.map((r) => ({
-        id: r.id || uid(),
-        title: r.title || "Untitled",
-        utensils: r.utensils || [],
-        ingredients: r.ingredients || [],
-        steps: r.steps || [],
-        notes: r.notes || "",
-        createdAt: r.createdAt || Date.now(),
-        updatedAt: r.updatedAt || Date.now(),
-      }));
+      const data = JSON.parse(reader.result);
+      const isFull = data && !Array.isArray(data) && Array.isArray(data.recipes);
+      const incomingRecipes = isFull ? data.recipes : data;
+      if (!Array.isArray(incomingRecipes)) throw new Error("This file isn't a Recipe Box backup.");
+
+      const summary = isFull
+        ? "Full backup found:\n• " + incomingRecipes.length + " recipe(s)\n• " +
+          (data.supplies || []).length + " supply item(s)\n• " +
+          (data.ingredients || []).length + " ingredient(s)\n• " +
+          (data.pantry || []).length + " pantry staple(s)"
+        : "Found " + incomingRecipes.length + " recipe(s). (Older recipes-only file — supplies, ingredients and pantry won't be touched.)";
+      const merge = confirm(summary +
+        "\n\nOK = MERGE with what you already have.\nCancel = REPLACE everything with this file.");
+
+      const cleanedRecipes = incomingRecipes.map(cleanRecipe);
       if (merge) {
         const ids = new Set(recipes.map((r) => r.id));
-        cleaned.forEach((r) => { if (ids.has(r.id)) r.id = uid(); recipes.push(r); });
+        cleanedRecipes.forEach((r) => { if (ids.has(r.id)) r.id = uid(); recipes.push(r); });
       } else {
-        recipes = cleaned;
+        recipes = cleanedRecipes;
       }
-      save(); renderRecipes(); alert("Import complete.");
+
+      if (isFull) {
+        if (merge) {
+          mergeByName(supplies, data.supplies, (s) => ({
+            id: s.id || uid(), name: s.name || "", category: s.category || "Other", need: !!s.need,
+          }));
+          mergeByName(ingredients, data.ingredients, (i) => ({
+            id: i.id || uid(), name: i.name || "", units: Array.isArray(i.units) ? i.units : [],
+          }));
+          (data.pantry || []).forEach((p) => {
+            const nm = (p || "").toString().toLowerCase().trim();
+            if (nm && !pantry.includes(nm)) pantry.push(nm);
+          });
+        } else {
+          if (Array.isArray(data.supplies)) supplies = data.supplies.map((s) => ({
+            id: s.id || uid(), name: s.name || "", category: s.category || "Other", need: !!s.need,
+          }));
+          if (Array.isArray(data.ingredients)) ingredients = data.ingredients.map((i) => ({
+            id: i.id || uid(), name: i.name || "", units: Array.isArray(i.units) ? i.units : [],
+          }));
+          if (Array.isArray(data.pantry)) pantry = data.pantry.map((p) => (p || "").toString().toLowerCase().trim()).filter(Boolean);
+        }
+        saveSupplies(); saveIngredients(); savePantry();
+      }
+
+      save(); renderRecipes();
+      alert("Import complete.");
     } catch (err) {
-      alert("Sorry, that file could not be read as recipes.\n\n" + err.message);
+      alert("Sorry, that file could not be read as a Recipe Box backup.\n\n" + err.message);
     }
   };
   reader.readAsText(file);
