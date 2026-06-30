@@ -31,6 +31,9 @@
   <nav class="tabs">
     <div class="tabs-inner">
       <button class="tab active" data-tab="recipes">Recipes</button>
+      <button class="tab" data-tab="ingredients">🥕 Ingredients</button>
+      <button class="tab" data-tab="supplies">🧺 Supplies</button>
+      <button class="tab" data-tab="niche">🫙 Niche items</button>
       <button class="tab" data-tab="shopping">🛒 Shopping list</button>
     </div>
   </nav>
@@ -43,7 +46,6 @@
         <select id="sortSelect" class="select" aria-label="Sort recipes">
           <option value="recent">Newest first</option>
           <option value="title">Title A–Z</option>
-          <option value="rating">Highest rated</option>
         </select>
       </div>
     </section>
@@ -54,6 +56,58 @@
         <p class="empty-emoji">🥣</p>
         <p>No recipes yet. Click <strong>+ Add recipe</strong> to create your first one.</p>
       </div>
+    </main>
+  </div>
+
+  <!-- ===== SUPPLIES VIEW ===== -->
+  <div id="suppliesView" hidden>
+    <main class="grid-wrap">
+      <div class="supplies-head">
+        <div>
+          <h2 class="shop-h">Household &amp; pantry supplies</h2>
+          <p id="suppliesSummary" class="supply-summary"></p>
+        </div>
+        <div class="supplies-actions no-print">
+          <button id="supplyEditBtn" class="btn btn-primary">✏️ Edit items</button>
+          <button id="supplyRestockBtn" class="btn btn-ghost" title="Mark everything back in stock after a shop">Mark all restocked</button>
+        </div>
+      </div>
+      <p class="supply-help">Tap any item you've run out of — it turns into a 🛒 and shows up on your Shopping list.</p>
+      <div id="suppliesList"></div>
+    </main>
+  </div>
+
+  <!-- ===== INGREDIENTS VIEW ===== -->
+  <div id="ingredientsView" hidden>
+    <main class="grid-wrap">
+      <div class="supplies-head">
+        <div>
+          <h2 class="shop-h">Ingredients</h2>
+          <p id="ingredientsSummary" class="supply-summary"></p>
+        </div>
+        <div class="supplies-actions no-print">
+          <button id="ingredientAddBtn" class="btn btn-primary">+ Add ingredient</button>
+        </div>
+      </div>
+      <p class="supply-help">Your master list of ingredients and the units you measure each one in. When you add a recipe, you can search this list, pick an ingredient, and set a quantity — or create a new ingredient on the spot.</p>
+      <div id="ingredientsList"></div>
+    </main>
+  </div>
+
+  <!-- ===== NICHE ITEMS VIEW ===== -->
+  <div id="nicheView" hidden>
+    <main class="grid-wrap">
+      <div class="supplies-head">
+        <div>
+          <h2 class="shop-h">Niche items</h2>
+          <p id="nicheSummary" class="supply-summary"></p>
+        </div>
+        <div class="supplies-actions no-print">
+          <button id="nicheEditBtn" class="btn btn-primary">✏️ Edit list</button>
+        </div>
+      </div>
+      <p class="supply-help">Rarely-used ingredients you don't restock on a schedule (e.g. Chinese cooking wine, saffron). When a meal you pick on the Shopping tab calls for one, it appears under <strong>“Double-check you still have these”</strong> so you can confirm there's some left — or tap it here if you already know you're out.</p>
+      <div id="nicheList"></div>
     </main>
   </div>
 
@@ -131,7 +185,21 @@
 
         <label class="field">
           <span class="field-label">Ingredients <em>*</em></span>
-          <span class="field-hint">One per line. Pantry staples are detected automatically.</span>
+          <span class="field-hint">Search a known ingredient, set the amount, and tap Add — or just type lines manually below. One per line.</span>
+          <div class="ing-add-row">
+            <div class="ing-pick-wrap">
+              <input type="text" id="ingPick" placeholder="Search ingredient…" autocomplete="off" />
+              <div id="ingSuggest" class="ing-suggest" hidden></div>
+            </div>
+            <input type="text" id="ingQty" class="ing-qty" placeholder="Qty" inputmode="decimal" />
+            <select id="ingUnit" class="ing-unit"><option value="">(no unit)</option></select>
+            <button type="button" id="ingAddBtn" class="btn btn-primary">Add</button>
+          </div>
+          <div id="ingInline" class="ing-inline" hidden>
+            <p class="ing-inline-label">New ingredient: <strong id="ingInlineName"></strong> — pick the unit(s) you measure it in:</p>
+            <div id="ingInlineUnits" class="unit-checks"></div>
+            <button type="button" id="ingInlineCreate" class="btn btn-primary">Create &amp; use</button>
+          </div>
           <textarea id="fIngredients" rows="6" required placeholder="2 ripe bananas&#10;1 cup flour&#10;1/2 cup sugar"></textarea>
         </label>
 
@@ -139,11 +207,6 @@
           <span class="field-label">Instructions <em>*</em></span>
           <span class="field-hint">One step per line — they'll be numbered and shown one at a time in Cook mode</span>
           <textarea id="fSteps" rows="6" required placeholder="Preheat oven to 350°F&#10;Mash the bananas&#10;Mix everything and bake 50 min"></textarea>
-        </label>
-
-        <label class="field">
-          <span class="field-label">Rating</span>
-          <div id="ratingStars" class="rating-input" role="radiogroup" aria-label="Rating"></div>
         </label>
 
         <label class="field">
@@ -173,6 +236,65 @@
       <div class="form-actions">
         <button type="button" class="btn btn-ghost" data-close>Cancel</button>
         <button id="pantrySave" class="btn btn-primary">Save pantry</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Supply items editor modal ===== -->
+  <div id="supplyModal" class="modal" hidden>
+    <div class="modal-card form-card" role="dialog" aria-modal="true">
+      <button class="modal-close" data-close aria-label="Close">&times;</button>
+      <h2>Edit supply items</h2>
+      <p class="field-hint" style="margin-bottom:12px">
+        Type a category name followed by a colon, then list its items one per line. Leave a blank
+        line before the next category. Add new categories any time. Items you've marked to restock
+        keep their status when you save.<br>
+        <strong>Uncategorized</strong> is where new pantry staples land until you file them. Rarely-used
+        “niche” ingredients (e.g. Chinese cooking wine) now live on their own <strong>🫙 Niche items</strong> tab.
+      </p>
+      <textarea id="supplyText" rows="16" class="pantry-text" placeholder="Pantry:&#10;olive oil&#10;flour&#10;&#10;Bathroom:&#10;toilet paper&#10;toothpaste"></textarea>
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+        <button id="supplySave" class="btn btn-primary">Save items</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Ingredient editor modal ===== -->
+  <div id="ingredientModal" class="modal" hidden>
+    <div class="modal-card form-card" role="dialog" aria-modal="true">
+      <button class="modal-close" data-close aria-label="Close">&times;</button>
+      <h2 id="ingredientModalTitle">New ingredient</h2>
+      <label class="field">
+        <span class="field-label">Name <em>*</em></span>
+        <input type="text" id="ingName" placeholder="e.g. Beef mince" />
+      </label>
+      <div class="field">
+        <span class="field-label">Units</span>
+        <span class="field-hint">Tick the unit(s) you measure this in. Tick more than one if it varies — e.g. Flour in cups or grams.</span>
+        <div id="ingUnitChecks" class="unit-checks"></div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+        <button id="ingredientSave" class="btn btn-primary">Save ingredient</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Niche items editor modal ===== -->
+  <div id="nicheModal" class="modal" hidden>
+    <div class="modal-card form-card" role="dialog" aria-modal="true">
+      <button class="modal-close" data-close aria-label="Close">&times;</button>
+      <h2>Edit niche items</h2>
+      <p class="field-hint" style="margin-bottom:12px">
+        One item per line. These are rarely-used ingredients you confirm before cooking rather than
+        restock on a schedule. When a recipe you've selected on the Shopping tab uses one, it shows up
+        there to double-check. Items you've flagged keep their status when you save.
+      </p>
+      <textarea id="nicheText" rows="12" class="pantry-text" placeholder="chinese cooking wine&#10;saffron&#10;fish sauce&#10;rose water"></textarea>
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+        <button id="nicheSave" class="btn btn-primary">Save list</button>
       </div>
     </div>
   </div>
